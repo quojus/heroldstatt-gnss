@@ -1,0 +1,8 @@
+{
+"type": "FeatureCollection",
+"name": "Heroldstatt_WEA3__mitte",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+"features": [
+{ "type": "Feature", "properties": { "station": "Mitte", "ost": 551492.286, "nord": 5365828.884, "hoehe": 750.243, "s_lage": 0.016, "s_hoehe": 0.028, "zeit": "11.06.2026 09:44:20", "ost_etrs89": 551493.224, "nord_etrs89": 5365829.725, "hoehe_etrs89": 750.22, "delta_ost_m": 0.938, "delta_nord_m": 0.841 }, "geometry": { "type": "Point", "coordinates": [ 9.696290134407491, 48.443502401823231 ] } }
+]
+}

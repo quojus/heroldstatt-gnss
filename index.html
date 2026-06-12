@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>GNSS-Messungen Heroldstatt WEA 1–3</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body, #map { height: 100%; width: 100%; }
+
+    #panel {
+      position: absolute; top: 10px; right: 10px; z-index: 1000;
+      background: rgba(255,255,255,0.95); border-radius: 8px;
+      padding: 12px 14px; min-width: 220px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      font-family: Arial, sans-serif; font-size: 13px;
+    }
+    #panel h3 { font-size: 14px; margin-bottom: 10px; color: #222; }
+    .group-label {
+      font-weight: bold; margin-top: 10px; margin-bottom: 4px;
+      font-size: 12px; color: #444; text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .layer-row {
+      display: flex; align-items: center; gap: 7px;
+      margin-bottom: 4px; cursor: pointer;
+    }
+    .layer-row input { cursor: pointer; }
+    .swatch {
+      width: 20px; height: 4px; border-radius: 2px; flex-shrink: 0;
+    }
+    .swatch.circle {
+      width: 10px; height: 10px; border-radius: 50%; border: 2px solid rgba(0,0,0,0.3);
+    }
+    .swatch.dashed {
+      background: repeating-linear-gradient(90deg,
+        var(--c) 0px, var(--c) 5px, transparent 5px, transparent 9px);
+    }
+    #title-bar {
+      position: absolute; bottom: 0; left: 0; right: 0; z-index: 999;
+      background: rgba(255,255,255,0.85);
+      padding: 5px 12px; font-family: Arial, sans-serif;
+      font-size: 11px; color: #555;
+    }
+  </style>
+</head>
+<body>
+<div id="map"></div>
+
+<div id="panel">
+  <h3>GNSS Heroldstatt WEA 1–3</h3>
+
+  <div class="group-label">GPS-Messpunkte</div>
+  <label class="layer-row"><input type="checkbox" checked data-group="wea1"/>
+    <span class="swatch circle" style="background:#2171b5"></span>WEA 1</label>
+  <label class="layer-row"><input type="checkbox" checked data-group="wea2"/>
+    <span class="swatch circle" style="background:#e07000"></span>WEA 2</label>
+  <label class="layer-row"><input type="checkbox" checked data-group="wea3"/>
+    <span class="swatch circle" style="background:#238b45"></span>WEA 3</label>
+  <label class="layer-row"><input type="checkbox" checked data-group="strasse"/>
+    <span class="swatch circle" style="background:#7b2d8b"></span>WEA3 Straße</label>
+  <label class="layer-row"><input type="checkbox" checked data-group="turm"/>
+    <span class="swatch circle" style="background:#cc0000"></span>Turmmittelpunkte</label>
+
+  <div class="group-label">ERT-Planlinien</div>
+  <label class="layer-row"><input type="checkbox" checked data-group="ert_orig"/>
+    <span class="swatch" style="background:#555;height:3px"></span>Original (WGS84)</label>
+  <label class="layer-row"><input type="checkbox" checked data-group="ert_korr"/>
+    <span class="swatch dashed" style="--c:#555;background:none;border-top:2px dashed #555;height:0"></span>ETRS89-korrigiert</label>
+
+  <div class="group-label">Hintergrund</div>
+  <label class="layer-row"><input type="radio" name="basemap" value="sat" checked/> Satellit</label>
+  <label class="layer-row"><input type="radio" name="basemap" value="osm"/> OpenStreetMap</label>
+</div>
+
+<div id="title-bar">
+  Koordinatensystem: ETRS89/UTM32N (EPSG:25832) · ERT orig = WGS84-Nulltransformation · ERT korr = ETRS89-datum­korrigiert (−0,84 m E / −0,49 m N)
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+// ── Basemaps ──
+const sat = L.tileLayer(
+  'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+  { attribution: 'Tiles © Esri', maxZoom: 20 }
+);
+const osm = L.tileLayer(
+  'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+  { attribution: '© OpenStreetMap', maxZoom: 20 }
+);
+
+const map = L.map('map', { layers: [sat] });
+map.setView([48.622, 9.617], 15);
+
+// ── Layer-Gruppen ──
+const groups = { wea1:[], wea2:[], wea3:[], strasse:[], turm:[], ert_orig:[], ert_korr:[] };
+
+// ── Farben ──
+const colors = {
+  wea1:'#2171b5', wea2:'#e07000', wea3:'#238b45',
+  strasse:'#7b2d8b', turm:'#cc0000',
+  ert_orig_he01:'#1a6fa8', ert_orig_he02:'#e07000', ert_orig_he03:'#1a8040',
+  ert_korr_he01:'#1a6fa8', ert_korr_he02:'#e07000', ert_korr_he03:'#1a8040',
+};
+
+// ── GeoJSON-Definitionen ──
+const layers_def = [
+  // WEA1
+  { file:'Heroldstatt_WEA1_1.geojson',   group:'wea1',     label:'WEA1 P1' },
+  { file:'Heroldstatt_WEA1_7.geojson',   group:'wea1',     label:'WEA1 P7' },
+  { file:'Heroldstatt_WEA1_8.geojson',   group:'wea1',     label:'WEA1 P8' },
+  // WEA2
+  { file:'Heroldstatt_WEA2_1.geojson',   group:'wea2',     label:'WEA2 P1' },
+  { file:'Heroldstatt_WEA2_2.geojson',   group:'wea2',     label:'WEA2 P2' },
+  { file:'Heroldstatt_WEA2_3.geojson',   group:'wea2',     label:'WEA2 P3' },
+  { file:'Heroldstatt_WEA2_4.geojson',   group:'wea2',     label:'WEA2 P4' },
+  { file:'Heroldstatt_WEA2_5.geojson',   group:'wea2',     label:'WEA2 P5' },
+  { file:'Heroldstatt_WEA2_6.geojson',   group:'wea2',     label:'WEA2 P6' },
+  { file:'Heroldstatt_WEA2_7.geojson',   group:'wea2',     label:'WEA2 P7' },
+  { file:'Heroldstatt_WEA2_8.geojson',   group:'wea2',     label:'WEA2 P8' },
+  // WEA3
+  { file:'Heroldstatt_WEA3_1.geojson',   group:'wea3',     label:'WEA3 P1' },
+  { file:'Heroldstatt_WEA3_2.geojson',   group:'wea3',     label:'WEA3 P2' },
+  { file:'Heroldstatt_WEA3_3.geojson',   group:'wea3',     label:'WEA3 P3' },
+  { file:'Heroldstatt_WEA3_4.geojson',   group:'wea3',     label:'WEA3 P4' },
+  { file:'Heroldstatt_WEA3_5.geojson',   group:'wea3',     label:'WEA3 P5' },
+  { file:'Herolfstatt_WEA3_6.geojson',   group:'wea3',     label:'WEA3 P6' },
+  { file:'Heroldstatt_WEA3_7.geojson',   group:'wea3',     label:'WEA3 P7' },
+  { file:'Heroldstatt_WEA3_8.geojson',   group:'wea3',     label:'WEA3 P8' },
+  // Straße + Turm
+  { file:'WEA3_5_Strasse.geojson',                         group:'strasse',  label:'Straße' },
+  { file:'Heroldstatt_WEA1_turmmitelpunkt.geojson',        group:'turm',     label:'Turm WEA1' },
+  { file:'Heroldstatt_WEA_2_Turmmittelpunk.geojson',       group:'turm',     label:'Turm WEA2' },
+  { file:'Heroldstatt_WEA3__mitte.geojson',                group:'turm',     label:'Turm WEA3' },
+  // ERT original
+  { file:'ERT_Linien_Plan_HE01.geojson', group:'ert_orig', label:'ERT HE01', color:'#1a6fa8', dash:false },
+  { file:'ERT_Linien_Plan_HE02.geojson', group:'ert_orig', label:'ERT HE02', color:'#e07000', dash:false },
+  { file:'ERT_Linien_Plan_HE03.geojson', group:'ert_orig', label:'ERT HE03', color:'#1a8040', dash:false },
+  // ERT ETRS89korr
+  { file:'ERT_Linien_Plan_HE01_ETRS89korr.geojson', group:'ert_korr', label:'ERT HE01 korr', color:'#1a6fa8', dash:true },
+  { file:'ERT_Linien_Plan_HE02_ETRS89korr.geojson', group:'ert_korr', label:'ERT HE02 korr', color:'#e07000', dash:true },
+  { file:'ERT_Linien_Plan_HE03_ETRS89korr.geojson', group:'ert_korr', label:'ERT HE03 korr', color:'#1a8040', dash:true },
+];
+
+function pointStyle(group) {
+  return { radius:5, fillColor:colors[group]||'#999', color:'#fff',
+           weight:1.2, opacity:1, fillOpacity:0.85 };
+}
+function lineStyle(color, dash) {
+  return { color, weight: dash ? 2 : 2.5,
+           dashArray: dash ? '6,4' : null, opacity:0.9 };
+}
+
+// ── GeoJSON laden und rendern ──
+const promises = layers_def.map(def => {
+  return fetch(def.file)
+    .then(r => r.json())
+    .then(data => {
+      let leafLayer;
+      if (def.group === 'ert_orig' || def.group === 'ert_korr') {
+        leafLayer = L.geoJSON(data, {
+          style: () => lineStyle(def.color, def.dash),
+          onEachFeature: (feature, layer) => {
+            const p = feature.properties || {};
+            const info = Object.entries(p).map(([k,v]) => `<b>${k}:</b> ${v}`).join('<br/>');
+            if (info) layer.bindPopup(`<b>${def.label}</b><br/>${info}`);
+          }
+        });
+      } else {
+        leafLayer = L.geoJSON(data, {
+          pointToLayer: (f, latlng) => {
+            if (def.group === 'turm') {
+              return L.circleMarker(latlng, {
+                radius:8, fillColor:'#cc0000', color:'#fff',
+                weight:2, fillOpacity:1
+              });
+            }
+            return L.circleMarker(latlng, pointStyle(def.group));
+          },
+          onEachFeature: (feature, layer) => {
+            const p = feature.properties || {};
+            const station = p.station || p.Station || '';
+            const ost = p.ost_etrs89 ? (+p.ost_etrs89).toFixed(3) : '';
+            const nord = p.nord_etrs89 ? (+p.nord_etrs89).toFixed(3) : '';
+            const h = p.hoehe_etrs89 ? (+p.hoehe_etrs89).toFixed(3) : '';
+            let html = `<b>${def.label}</b>`;
+            if (station) html += `<br/>Station: ${station}`;
+            if (ost)     html += `<br/>E: ${ost} m`;
+            if (nord)    html += `<br/>N: ${nord} m`;
+            if (h)       html += `<br/>H: ${h} m`;
+            layer.bindPopup(html);
+          }
+        });
+      }
+      leafLayer.addTo(map);
+      groups[def.group].push(leafLayer);
+    })
+    .catch(() => console.warn('Nicht geladen:', def.file));
+});
+
+// ── Checkboxen ──
+Promise.all(promises).then(() => {
+  document.querySelectorAll('input[data-group]').forEach(cb => {
+    cb.addEventListener('change', () => {
+      const g = cb.dataset.group;
+      groups[g].forEach(l => cb.checked ? l.addTo(map) : map.removeLayer(l));
+    });
+  });
+});
+
+// ── Basemap-Radio ──
+document.querySelectorAll('input[name=basemap]').forEach(r => {
+  r.addEventListener('change', () => {
+    if (r.value === 'sat') { osm.remove(); sat.addTo(map); }
+    else                   { sat.remove(); osm.addTo(map); }
+  });
+});
+</script>
+</body>
+</html>

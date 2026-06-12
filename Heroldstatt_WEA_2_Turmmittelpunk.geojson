@@ -1,0 +1,8 @@
+{
+"type": "FeatureCollection",
+"name": "Heroldstatt_WEA_2_Turmmittelpunk",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+"features": [
+{ "type": "Feature", "properties": { "station": "Heroldstatt_WEA2_Turmmittelpunkt", "ost": 551064.385, "nord": 5366421.956, "hoehe": 746.223, "s_lage": 0.013, "s_hoehe": 0.027, "zeit": "06.06.2026 13:51:15", "ost_etrs89": 551065.323, "nord_etrs89": 5366422.796, "hoehe_etrs89": 746.199, "delta_ost_m": 0.938, "delta_nord_m": 0.84 }, "geometry": { "type": "Point", "coordinates": [ 9.690576836795405, 48.44887242972343 ] } }
+]
+}

@@ -1,0 +1,15 @@
+{
+"type": "FeatureCollection",
+"name": "ERT_Linien_Plan_HE03_ETRS89korr",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+"features": [
+{ "type": "Feature", "properties": { "fid": 1 }, "geometry": { "type": "LineString", "coordinates": [ [ 9.697030264225456, 48.443906588173725 ], [ 9.695548232789491, 48.443094348589696 ] ] } },
+{ "type": "Feature", "properties": { "fid": 2 }, "geometry": { "type": "LineString", "coordinates": [ [ 9.697056184982673, 48.443093231310343 ], [ 9.695835370786789, 48.444079266375219 ] ] } },
+{ "type": "Feature", "properties": { "fid": 3 }, "geometry": { "type": "LineString", "coordinates": [ [ 9.697004005110671, 48.443064668379186 ], [ 9.695783190577366, 48.444050702896966 ] ] } },
+{ "type": "Feature", "properties": { "fid": 4 }, "geometry": { "type": "LineString", "coordinates": [ [ 9.696951824066337, 48.443036015465736 ], [ 9.695731009197715, 48.444022049436406 ] ] } },
+{ "type": "Feature", "properties": { "fid": 5 }, "geometry": { "type": "LineString", "coordinates": [ [ 9.696743104166396, 48.442921673445838 ], [ 9.695522287950228, 48.443907705228014 ] ] } },
+{ "type": "Feature", "properties": { "fid": 6 }, "geometry": { "type": "LineString", "coordinates": [ [ 9.69679528374604, 48.442950236497389 ], [ 9.69557446786728, 48.443936268826661 ] ] } },
+{ "type": "Feature", "properties": { "fid": 7 }, "geometry": { "type": "LineString", "coordinates": [ [ 9.6968474646147, 48.442978889483051 ], [ 9.695626649071242, 48.443964922359505 ] ] } },
+{ "type": "Feature", "properties": { "fid": 8 }, "geometry": { "type": "LineString", "coordinates": [ [ 9.696899644311303, 48.443007452486491 ], [ 9.695678829105265, 48.443993485909978 ] ] } }
+]
+}
