@@ -90,7 +90,7 @@ const osm = L.tileLayer(
 );
 
 const map = L.map('map', { layers: [sat] });
-map.setView([48.622, 9.617], 15);
+map.fitBounds([[48.44293, 9.68919], [48.45365, 9.69705]]);
 
 // ── Layer-Gruppen ──
 const groups = { wea1:[], wea2:[], wea3:[], strasse:[], turm:[], ert_orig:[], ert_korr:[] };
