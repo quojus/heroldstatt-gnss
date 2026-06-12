@@ -49,6 +49,10 @@
 
 <div id="panel">
   <h3>GNSS Heroldstatt WEA 1–3</h3>
+  <button onclick="map.fitBounds([[48.44292,9.68918],[48.45365,9.69722]])"
+    style="width:100%;margin-bottom:10px;padding:5px 0;background:#2171b5;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:12px;">
+    ⌖ Zoom auf alle Messdaten
+  </button>
 
   <div class="group-label">GPS-Messpunkte</div>
   <label class="layer-row"><input type="checkbox" checked data-group="wea1"/>
@@ -89,8 +93,9 @@ const osm = L.tileLayer(
   { attribution: '© OpenStreetMap', maxZoom: 20 }
 );
 
+const BOUNDS = [[48.44292, 9.68918], [48.45365, 9.69722]];
 const map = L.map('map', { layers: [sat] });
-map.fitBounds([[48.44293, 9.68919], [48.45365, 9.69705]]);
+map.fitBounds(BOUNDS, { padding: [20, 20] });
 
 // ── Layer-Gruppen ──
 const groups = { wea1:[], wea2:[], wea3:[], strasse:[], turm:[], ert_orig:[], ert_korr:[] };
